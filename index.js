@@ -1,88 +1,81 @@
 import express from "express";
 import bodyParser from "body-parser";
-import pg from "pg";m
 
 const app = express();
-const port = 3000;
+const port = 4000;
 
-const db = new pg.Client({
-  user:"postgres",
-  host: "localhost",
-  database: "secrets",
-  password:"Justice123",
-  port: "5432",
-});
+// In-memory data store
+let posts = [
+  {
+    id: 1,
+    title: "The Rise of Decentralized Finance",
+    content:
+      "Decentralized Finance (DeFi) is an emerging and rapidly evolving field in the blockchain industry. It refers to the shift from traditional, centralized financial systems to peer-to-peer finance enabled by decentralized technologies built on Ethereum and other blockchains. With the promise of reduced dependency on the traditional banking sector, DeFi platforms offer a wide range of services, from lending and borrowing to insurance and trading.",
+    author: "Alex Thompson",
+    date: "2023-08-01T10:00:00Z",
+  },
+  {
+    id: 2,
+    title: "The Impact of Artificial Intelligence on Modern Businesses",
+    content:
+      "Artificial Intelligence (AI) is no longer a concept of the future. It's very much a part of our present, reshaping industries and enhancing the capabilities of existing systems. From automating routine tasks to offering intelligent insights, AI is proving to be a boon for businesses. With advancements in machine learning and deep learning, businesses can now address previously insurmountable problems and tap into new opportunities.",
+    author: "Mia Williams",
+    date: "2023-08-05T14:30:00Z",
+  },
+  {
+    id: 3,
+    title: "Sustainable Living: Tips for an Eco-Friendly Lifestyle",
+    content:
+      "Sustainability is more than just a buzzword; it's a way of life. As the effects of climate change become more pronounced, there's a growing realization about the need to live sustainably. From reducing waste and conserving energy to supporting eco-friendly products, there are numerous ways we can make our daily lives more environmentally friendly. This post will explore practical tips and habits that can make a significant difference.",
+    author: "Samuel Green",
+    date: "2023-08-10T09:15:00Z",
+  },
+];
 
-db.connect();
+let lastId = 3;
 
+// Middleware
+app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(express.static("public"));
 
-app.get("/", (req, res) => {
-  res.render("home.ejs");
+//Write your code here//
+
+//CHALLENGE 1: GET All posts
+app.get("/post", (req, res) => {
+  console.log("post");
+  res.json("post");
 });
 
 
-app.get("/login", (req, res) => {
-  res.render("login.ejs");
+//CHALLENGE 2: GET a specific post by id
+app.get("/post/id", (req, res) => {
+const post = post.find((p) => p.id === parseInt(req.params.id));
+if (!post) return res.status(404).json({message:"post not find"})
+res.json(post);
 });
 
-app.get("/register", (req, res) => {
-  res.render("register.ejs");
-});
+//CHALLENGE 3: POST a new post
+app.post("/post", (req, res) => {
+  const newId = lastId += 1;
+  const post = {
+    id : newId,
+    title : req.body.title,
+    content : req.body.content,
+    author : req.body.author,
+    date : new Date()
+  };
+  lastId : newId;
+  post.push(post);
+  res.status(201).json(post);
+})
 
-app.post("/register", async (req, res) => {
-  const email = req.body.username;
-  const password = req.body.password;
-  try {
-    const checkResult = await db.query("SELECT * FROM users WHERE email = $1", 
-     [email],
-);
-    
-    if (checkResults.rows.length > 0) {
-      res.send("Email already exist. try logging in")
-    }else{
-      const result = await db.query(
-        "INSERT INTO users (email, password) VALUES ( $1, $2)",
-        [email, password]
-      );
-    
-      console.log(result);
-      res.render("secrets.ejs")
-
-    }
-  }
-  catch(err){
-    console.log(err);
-}
-});
-
-app.post("/login", async (req, res) => {
-  const email = req.body.username;
-  const password = req.body.password;
-
-  try {
-    const result = await db.query("SELECT * FROM users WHERE email =$1",
-    [email,]
-  
-);
-
-if (result.rows.length > 0) {
-  //console.log(result.row);
-  const users =results.rows[0];
-  const storedpassword = user.password;
-
-  if (password === storedpassword.password)
-  res.render("secrets.ejs");
-}else{
-  res.send("user not found");
-}
-
-}catch(err) {
-  console.log(err);
-}
-});
+//CHALLENGE 4: PATCH a post when you just want to update one parameter
+app.i("/post/id", (req, res) => {
+const post = posts.find((p) => p.id === parseInt(req.params.id));
+if (!post) return res.status(404).json({ message: "post not found" })
+})
+//CHALLENGE 5: DELETE a specific post by providing the post id.
 
 app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
+  console.log(`API is running at http://localhost:${port}`);
 });
